@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    	<title>TransLoc API jQuery Plugin Testbed</title>
+    </head>
+    <body>
+        <h1>Agencies:</h1>
+        <ul class="agencies">
+        </ul>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script src="jquery.transloc.js"></script>
+        <script type="text/javascript">
+            $(function(){
+                var $agencies = $('ul.agencies');
+                
+                $.transloc('agencies', {
+                    success: function(agencies){
+                        $.each(agencies, function(i, agency){
+                            $agencies.append('<li>'+agency.short_name+': '+agency.long_name+'</li>');
+                        });
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
