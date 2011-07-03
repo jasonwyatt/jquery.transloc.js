@@ -1,0 +1,5 @@
+jquery.transloc.js is a jQuery plugin that wraps the TransLoc API.
+
+It uses YQL as a default jsonp proxy for the API.  Please see documentation in the code for more details.
+
+TODO: add docs here.
