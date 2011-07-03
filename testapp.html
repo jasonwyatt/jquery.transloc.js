@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    	<title>TransLoc API jQuery Plugin Testbed</title>
+    </head>
+    <body>
+        <h1>Agencies:</h1>
+        <p>Click an agency to load more data about it.</p>
+        <ul class="agencies">
+        </ul>
+        
+        <h1>Routes:</h1>
+        <ul class="routes">
+        </ul>
+        
+        <h1>Number of Stops:</h1>
+        <span class="stopCount">
+        </span>
+        
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+        <script src="jquery.transloc.js"></script>
+        <script type="text/javascript">
+            $(function(){
+                
+                var $agencies = $('ul.agencies');
+                
+                $.transloc('agencies', {
+                    success: function(agencies){
+                        $.each(agencies, function(i, agency){
+                            $agencies.append('<li class="agency" data-agency_id="'+agency.agency_id+'">'+agency.short_name+': '+agency.long_name+'</li>');
+                        });
+                    }
+                });
+                
+                $('body').delegate('li.agency', 'click', function(){
+                    var agency_id = $(this).data('agency_id');
+                    
+                    $.transloc('routes', {
+                        agencyIds: [agency_id],
+                        success: function(routes){
+                            console.dir(routes);
+                        }
+                    });
+                    $.transloc('stops', {
+                        agencyIds: [agency_id],
+                        success: function(routes){
+                            console.dir(routes);
+                        }
+                    });
+                    $.transloc('vehicles', {
+                        agencyIds: [agency_id],
+                        success: function(routes){
+                            console.dir(routes);
+                        }
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

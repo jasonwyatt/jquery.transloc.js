@@ -170,7 +170,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             var data = data || {},
                 dataString = encodeURIComponent('?'+$.param(data));
             
-            return $.getJSON('http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20json%20where%20url%3D%22'+url+dataString+'%22&format=json&diagnostics=false&callback=?');
+            return $.getJSON('http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20json%20where%20url%3D%22'+url+dataString+'%22&format=json&diagnostics=false&_maxage=10&callback=?');
         },
         methods = {
             settings: function(newSettings){
@@ -189,17 +189,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //      Copy of the latest settings.
                 
                 if(newSettings !== null){
-                    $.extend(settings, newSettings);
+                    settings = $.extend(settings, newSettings);
                 }
                 
                 return $.extend({pluginVersion: pluginVersion}, settings);
             },
             
-            agencies: function(kwArgs){
+            request: function(type, kwArgs){
                 // summary:
-                //      Gets a list of agencies from the API.
+                //      Creates a request to the TransLoc API.
+                // type: String
+                //      Type of request, what data we're asking for. One of the 
+                //      following:
+                //      ["agencies", "segments", "routes", 
+                //          "stops", "arrival-estimates", "vehicles"]
                 // kwArgs: Object
-                //      Keyword Arguments, example:
+                //      Keyword arguments for the request. Example:
                 //      {
                 //          // geoArea: Object
                 //          //      OPTIONAL. A 'geo_area' object to filter the 
@@ -210,9 +215,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //          },
                 //          
                 //          // agencyIds: Array<String>
-                //          //      OPTIONAL. An array of agency ids or names to 
-                //          //      filter the results of the request.
+                //          //      Sometimes optional. An array of agency ids 
+                //          //      or names to filter the results of the 
+                //          //      request.
                 //          agencyIds: [],
+                //          
+                //          // routeIds: Array<String>
+                //          //      OPTIONAL. An array of route ids to filter 
+                //          //      the results of the request.
+                //          routeIds: [],
+                //          
+                //          // stopIds: Array<String>
+                //          //      OPTIONAL. An array of stop ids to filter 
+                //          //      the results of the request.
+                //          stopIds: [],
                 //
                 //          // error: function(responseCode, errorMessage)
                 //          //      OPTIONAL. A callback that will be triggered
@@ -220,28 +236,64 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //          //      error.
                 //          error: function(){},
                 //
-                //          // success: function(agencies)
+                //          // success: function(data)
                 //          //      A callback that will be triggered, passed 
-                //          //      an array of agency objects. 
+                //          //      an object or array of objects. 
                 //          success: function(){}
                 //      }
-                
-                var defaults = {
+                var typeToUrl = {
+                        'agencies': settings.agencyUrlPattern,
+                        'segments': settings.segmentUrlPattern,
+                        'routes': settings.routeUrlPattern,
+                        'stops': settings.stopUrlPattern,
+                        'arrival-estimates': settings.arrivalEstimateUrlPattern,
+                        'vehicles': settings.vehicleUrlPattern
+                    },
+                    typeToRequiredFields = {
+                        'agencies': [],
+                        'segments': ['agencyIds'],
+                        'routes': ['agencyIds'],
+                        'stops': ['agencyIds'],
+                        'vehicles': ['agencyIds'],
+                        'arrival-estimates': ['agencyIds']
+                    },
+                    defaults = {
                         error: function(){},
                         success: function(){}
                     },
                     jqXHR = null,
                     data = {},
-                    url = templatize(settings.agencyUrlPattern, settings);
+                    url = templatize(typeToUrl[type], settings),
+                    i, len;
                     
                 kwArgs = $.extend(defaults, kwArgs);
                 
+                // Check for required fields
+                for(i = 0, len = typeToRequiredFields[type].length; i < len; i++){
+                    if(typeof kwArgs[typeToRequiredFields[type]] === 'undefined'){
+                        $.error('Required field: '+typeToRequiredFields[type]+' not set.');
+                        return;
+                    }
+                }
+                
+                // geoArea is always optional
                 if(kwArgs.geoArea != null){
                     data.geo_area = buildGeoArea(kwArgs.geoArea);
                 }
                 
+                // agencies are usually required
                 if(kwArgs.agencyIds != null){
                     data.agencies = kwArgs.agencyIds.join(',');
+                } 
+                
+                // optional..
+                if(kwArgs.routeIds != null){
+                    data.routes = kwArgs.routeIds.join(',');
+                }
+                
+                // optional..
+                if(kwArgs.stopIds != null){
+                    data.routes = kwArgs.stopIds.join(',');
                 }
                 
                 jqXHR = getData(url, data);
@@ -260,15 +312,71 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         // Error!
                         kwArgs.error.call(null, jqXHR.status, jqXHR.responseText);
                     });
+            },
+            
+            agencies: function(kwArgs){
+                // summary:
+                //      Gets a list of agencies from the API.
+                // kwArgs: Object
+                //      Keyword Arguments
+                // kwArgs: Object
+                //      Keyword Arguments. See transloc.request for details.
+                
+                this.request("agencies", kwArgs);
+            },
+            
+            routes: function(kwArgs){
+                // summary:
+                //      Gets a list of routes from the API.
+                // kwArgs: Object
+                //      Keyword Arguments. See transloc.request for details.
+                
+                this.request("routes", kwArgs);
+            },
+
+            segments: function(kwArgs){
+                // summary:
+                //      Gets a list of segments from the API.
+                // kwArgs: Object
+                //      Keyword Arguments. See transloc.request for details.
+
+                this.request("segments", kwArgs);
+            },
+
+            stops: function(kwArgs){
+                // summary:
+                //      Gets a list of segments from the API.
+                // kwArgs: Object
+                //      Keyword Arguments. See transloc.request for details.
+
+                this.request("stops", kwArgs);
+            },
+
+            vehicles: function(kwArgs){
+                // summary:
+                //      Gets a list of vehicles from the API.
+                // kwArgs: Object
+                //      Keyword Arguments. See transloc.request for details.
+
+                this.request("vehicles", kwArgs);
+            },
+            
+            'arrival-estimates': function(kwArgs){
+                // summary:
+                //      Gets a list of arrival-estimates from the API.
+                // kwArgs: Object
+                //      Keyword Arguments. See transloc.request for details.
+                
+                this.request('arrival-estimates', kwArgs);
             }
         };
     
     $.transloc = function(method){
         if(methods[method]){
-            return methods[method].apply(null, Array.prototype.slice.call(arguments, 1));
+            return methods[method].apply(methods, Array.prototype.slice.call(arguments, 1));
         } else if(typeof method === 'object' || ! method) {
             // if method is an object, or null
-            return methods.settings.apply(null, method);
+            return methods.settings.apply(methods, [method]);
         } else {
             $.error( 'Method ' +  method + ' does not exist on jQuery.transloc' );
         }
