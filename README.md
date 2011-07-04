@@ -70,6 +70,7 @@ Additionally, you can specify the URLs as patterns with things in `{{mustache}}`
 Be sure to specify `useJsonPify` as false, unless you want to route through jsonPify also.
 
 Example:
+
     $.transloc({
         agencyUrlPattern: './agencies_{{name}}.php',
         routeUrlPattern: './routes_{{name}}.php',
@@ -80,4 +81,5 @@ Example:
         name: 'jason',
         useJsonPify: false
     });
+
 This will cause the plugin to request from `./agencies_jason.php` for any calls to the agency method.
