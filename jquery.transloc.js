@@ -298,6 +298,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 
                 jqXHR = getData(url, data);
                 jqXHR.success(function(responseData){
+                        if(typeof responseData === "string"){
+                            kwArgs.error.call(null, 400, responseData);
+                            return;
+                        }
+                        
                         // Success!
                         var data = responseData.data;
                         kwArgs.success.call(null, data);
