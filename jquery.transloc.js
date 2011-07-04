@@ -25,9 +25,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     var pluginVersion = '0.1',
         settings = {
             // useYql: Boolean
-            //      Whether or not to request the API data through the Yahoo 
-            //      Query Language as a JSONP proxy.
-            useYql: true,
+            //      Whether or not to request the API data through the jsonPify 
+            //      proxy.
+            useJsonPify: true,
             
             // apiVersion: String
             //      Version of the API to use.
@@ -127,9 +127,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         },
         getData = function(url, data){
             // summary:
-            //      Wrapper function for retrieving data from the API. If yql 
-            //      is enabled, we will use the getYqlData helper. Otherwise, 
-            //      we will use getRawData.
+            //      Wrapper function for retrieving data from the API. If 
+            //      jsonPify is enabled, we will use the getJsonPifyData 
+            //      helper. Otherwise, we will use getRawData.
             // url: String
             //      URL to fetch.
             // data: Object
@@ -138,7 +138,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             //      jqXHR object for the request.
             
             if(settings.useYql){
-                return getYqlData(url, data);
+                return getJsonPifyData(url, data);
             }
             
             return getRawData(url, data);
@@ -156,10 +156,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             
             return $.getJSON(url, data);
         },
-        getYqlData = function(url, data){
+        getJsonPifyData = function(url, data){
             // summary:
-            //      Helper function to trigger a request for data via the YQL 
-            //      proxy.
+            //      Helper function to trigger a request for data via the 
+            //      JsonPify proxy.
             // url: String
             //      URL to fetch.
             // data: Object
@@ -170,7 +170,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             var data = data || {},
                 dataString = encodeURIComponent('?'+$.param(data));
             
-            return $.getJSON('http://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20json%20where%20url%3D%22'+url+dataString+'%22&format=json&diagnostics=false&_maxage=10&callback=?');
+            return $.getJSON('http://jsonpify.heroku.com?resource='+encodeURIComponent(url)+dataString+"&callback=?");
         },
         methods = {
             settings: function(newSettings){
@@ -299,13 +299,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 jqXHR = getData(url, data);
                 jqXHR.success(function(responseData){
                         // Success!
-                        var data = null;
-                        
-                        if(settings.useYql){
-                            data = responseData.query.results.json.data;
-                        } else {
-                            data = responseData.data;
-                        }
+                        var data = responseData.data;
                         kwArgs.success.call(null, data);
                     })
                     .error(function(){
