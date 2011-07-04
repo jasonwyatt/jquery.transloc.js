@@ -24,7 +24,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
     
     var pluginVersion = '0.1',
         settings = {
-            // useYql: Boolean
+            // useJsonPify: Boolean
             //      Whether or not to request the API data through the jsonPify 
             //      proxy.
             useJsonPify: true,
@@ -137,7 +137,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             // returns:
             //      jqXHR object for the request.
             
-            if(settings.useYql){
+            if(settings.useJsonPify){
                 return getJsonPifyData(url, data);
             }
             
@@ -183,7 +183,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //      the current settings.
                 //      
                 //      Example: {
-                //          useYql: false
+                //          useJsonPify: false
                 //      }
                 // returns:
                 //      Copy of the latest settings.
