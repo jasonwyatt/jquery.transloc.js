@@ -3,6 +3,26 @@
     <head>
     	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     	<title>TransLoc API jQuery Plugin Testbed</title>
+    	<style type="text/css">
+    	    .agency {
+    	        cursor: pointer;
+    	    }
+    	    .route {
+    	        list-style-type: none;
+    	    }
+    	    .route {
+    	        font-family: monospace;
+    	    }
+    	    .short_name {
+    	        color: white;
+    	        padding: 3px;
+    	        font-weight: bold;
+    	        text-shadow: 0 1px 0 black;
+    	        min-width: 30px;
+    	        text-align: center;
+    	        display: inline-block;
+    	    }
+    	</style>
     </head>
     <body>
         <h1>Agencies:</h1>
@@ -17,6 +37,10 @@
         <h1>Number of Stops:</h1>
         <span class="stopCount">
         </span>
+        
+        <h1>Vehicles:</h1>
+        <div id="map"></div>
+        <span class="vehicleCount"></span>
         
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
         <script src="jquery.transloc.js"></script>
@@ -36,22 +60,44 @@
                 $('body').delegate('li.agency', 'click', function(){
                     var agency_id = $(this).data('agency_id');
                     
+                    function getStops(){
+                        $.transloc('stops', {
+                            agencyIds: [agency_id],
+                            success: function(stops){
+                                var stops = stops[agency_id] || [],
+                                    $stops = $('.stopCount');
+
+                                $stops.empty().html(stops.length+' stops.');
+                            }
+                        });
+                    }
+                    
                     $.transloc('routes', {
                         agencyIds: [agency_id],
                         success: function(routes){
-                            console.dir(routes);
-                        }
-                    });
-                    $.transloc('stops', {
-                        agencyIds: [agency_id],
-                        success: function(routes){
-                            console.dir(routes);
+                            var routes = routes[agency_id] || [],
+                                $routes = $('.routes').empty();
+                            
+                            $.each(routes, function(i, route){
+                                $routes.append('<li class="route"><span class="short_name" style="background-color: #'+route.color+';">'+route.short_name+'</span> '+route.long_name+'</li>');
+                            });
+                            
+                            // wait another second just to not exceed rate limits before asking for stops
+                            setTimeout(getStops,1000);
+                        },
+                        error: function(code, message){
+                            $routes.append('<li>'+code+': '+message+'</li>');
+                            
+                            // wait another second just to not exceed rate limits before asking for stops
+                            setTimeout(getStops,1000);
                         }
                     });
                     $.transloc('vehicles', {
                         agencyIds: [agency_id],
-                        success: function(routes){
-                            console.dir(routes);
+                        success: function(vehicles){
+                            var vehicles = vehicles[agency_id] || [];
+                            
+                            $('.vehicleCount').empty().html(vehicles.length+' vehicles.');
                         }
                     });
                 });
