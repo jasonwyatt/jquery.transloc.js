@@ -73,7 +73,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             //      within the the pattern are denoted by surrounding double-
             //      mustaches. They will be replaced at call-time with values 
             //      from the settings object.
-            segmentsUrlPattern: 'http://api.transloc.com/{{apiVersion}}/segments.json'
+            segmentUrlPattern: 'http://api.transloc.com/{{apiVersion}}/segments.json'
         },
         templatize = function(string, obj){
             // summary:
