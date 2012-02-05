@@ -22,58 +22,53 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 ;(function($){
     
-    var pluginVersion = '0.1',
+    var pluginVersion = '0.2',
         settings = {
-            // useJsonPify: Boolean
-            //      Whether or not to request the API data through the jsonPify 
-            //      proxy.
-            useJsonPify: true,
-            
             // apiVersion: String
             //      Version of the API to use.
-            apiVersion: '1.0',
+            apiVersion: '1.1',
             
             // vehicleUrlPattern: String
             //      URL Pattern for the vehicles endpoint of the API.  Tokens 
             //      within the the pattern are denoted by surrounding double-
             //      mustaches. They will be replaced at call-time with values 
             //      from the settings object.
-            vehicleUrlPattern: 'http://api.transloc.com/{{apiVersion}}/vehicles.json',
+            vehicleUrlPattern: 'http://api.transloc.com/{{apiVersion}}/vehicles.jsonp',
             
             // stopUrlPattern: String
             //      URL Pattern for the stops endpoint of the API.  Tokens 
             //      within the the pattern are denoted by surrounding double-
             //      mustaches. They will be replaced at call-time with values 
             //      from the settings object.
-            stopUrlPattern: 'http://api.transloc.com/{{apiVersion}}/stops.json',
+            stopUrlPattern: 'http://api.transloc.com/{{apiVersion}}/stops.jsonp',
             
             // routeUrlPattern: String
             //      URL Pattern for the routes endpoint of the API.  Tokens 
             //      within the the pattern are denoted by surrounding double-
             //      mustaches. They will be replaced at call-time with values 
             //      from the settings object.
-            routeUrlPattern: 'http://api.transloc.com/{{apiVersion}}/routes.json',
+            routeUrlPattern: 'http://api.transloc.com/{{apiVersion}}/routes.jsonp',
             
             // agencyUrlPattern: String
             //      URL Pattern for the agencies endpoint of the API.  Tokens 
             //      within the the pattern are denoted by surrounding double-
             //      mustaches. They will be replaced at call-time with values 
             //      from the settings object.
-            agencyUrlPattern: 'http://api.transloc.com/{{apiVersion}}/agencies.json',
+            agencyUrlPattern: 'http://api.transloc.com/{{apiVersion}}/agencies.jsonp',
             
             // arrivalEstimateUrlPattern: String
             //      URL Pattern for the arrival estimates endpoint of the API.  
             //      Tokens within the the pattern are denoted by surrounding 
             //      double-mustaches. They will be replaced at call-time with 
             //      values from the settings object.
-            arrivalEstimateUrlPattern: 'http://api.transloc.com/{{apiVersion}}/arrival-estimates.json',
+            arrivalEstimateUrlPattern: 'http://api.transloc.com/{{apiVersion}}/arrival-estimates.jsonp',
             
             // segmentsUrlPattern: String
             //      URL Pattern for the segments of the API.  Tokens 
             //      within the the pattern are denoted by surrounding double-
             //      mustaches. They will be replaced at call-time with values 
             //      from the settings object.
-            segmentUrlPattern: 'http://api.transloc.com/{{apiVersion}}/segments.json'
+            segmentUrlPattern: 'http://api.transloc.com/{{apiVersion}}/segments.jsonp'
         },
         templatize = function(string, obj){
             // summary:
@@ -127,9 +122,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         },
         getData = function(url, data){
             // summary:
-            //      Wrapper function for retrieving data from the API. If 
-            //      jsonPify is enabled, we will use the getJsonPifyData 
-            //      helper. Otherwise, we will use getRawData.
+            //      Wrapper function for retrieving data from the API. 
             // url: String
             //      URL to fetch.
             // data: Object
@@ -137,11 +130,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             // returns:
             //      jqXHR object for the request.
             
-            if(settings.useJsonPify){
-                return getJsonPifyData(url, data);
-            }
-            
-            return getRawData(url, data);
+            return getRawData(url + '?callback=?', data);
         },
         getRawData = function(url, data){
             // summary:
@@ -155,22 +144,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
             //      jqXHR object for the request.
             
             return $.getJSON(url, data);
-        },
-        getJsonPifyData = function(url, data){
-            // summary:
-            //      Helper function to trigger a request for data via the 
-            //      JsonPify proxy.
-            // url: String
-            //      URL to fetch.
-            // data: Object
-            //      OPTIONAL. Data to send with the request.
-            // returns:
-            //      jqXHR object for the request.
-            
-            var data = data || {},
-                dataString = encodeURIComponent('?'+$.param(data));
-            
-            return $.getJSON('http://jsonpify.heroku.com?resource='+encodeURIComponent(url)+dataString+"&callback=?");
         },
         methods = {
             settings: function(newSettings){
@@ -241,6 +214,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //          //      an object or array of objects. 
                 //          success: function(){}
                 //      }
+                //  returns:
+                //      jqXHR deferred object.
                 var typeToUrl = {
                         'agencies': settings.agencyUrlPattern,
                         'segments': settings.segmentUrlPattern,
@@ -311,6 +286,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                         // Error!
                         kwArgs.error.call(null, jqXHR.status, jqXHR.responseText);
                     });
+                    
+                return jqXHR;
             },
             
             agencies: function(kwArgs){
@@ -320,8 +297,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //      Keyword Arguments
                 // kwArgs: Object
                 //      Keyword Arguments. See transloc.request for details.
+                //  returns:
+                //      jqXHR deferred object.
                 
-                this.request("agencies", kwArgs);
+                
+                return this.request("agencies", kwArgs);
             },
             
             routes: function(kwArgs){
@@ -329,8 +309,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //      Gets a list of routes from the API.
                 // kwArgs: Object
                 //      Keyword Arguments. See transloc.request for details.
+                //  returns:
+                //      jqXHR deferred object.
                 
-                this.request("routes", kwArgs);
+                return this.request("routes", kwArgs);
             },
 
             segments: function(kwArgs){
@@ -338,8 +320,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //      Gets a list of segments from the API.
                 // kwArgs: Object
                 //      Keyword Arguments. See transloc.request for details.
+                //  returns:
+                //      jqXHR deferred object.
 
-                this.request("segments", kwArgs);
+                return this.request("segments", kwArgs);
             },
 
             stops: function(kwArgs){
@@ -347,8 +331,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //      Gets a list of segments from the API.
                 // kwArgs: Object
                 //      Keyword Arguments. See transloc.request for details.
+                //  returns:
+                //      jqXHR deferred object.
 
-                this.request("stops", kwArgs);
+                return this.request("stops", kwArgs);
             },
 
             vehicles: function(kwArgs){
@@ -356,8 +342,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //      Gets a list of vehicles from the API.
                 // kwArgs: Object
                 //      Keyword Arguments. See transloc.request for details.
+                //  returns:
+                //      jqXHR deferred object.
 
-                this.request("vehicles", kwArgs);
+                return this.request("vehicles", kwArgs);
             },
             
             'arrival-estimates': function(kwArgs){
@@ -365,8 +353,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 //      Gets a list of arrival-estimates from the API.
                 // kwArgs: Object
                 //      Keyword Arguments. See transloc.request for details.
+                //  returns:
+                //      jqXHR deferred object.
                 
-                this.request('arrival-estimates', kwArgs);
+                return this.request('arrival-estimates', kwArgs);
             }
         };
     

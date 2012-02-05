@@ -68,7 +68,7 @@
                         $.transloc('stops', {
                             agencyIds: [agency_id],
                             success: function(stops){
-                                var stops = stops[agency_id] || [],
+                                var stops = stops || [],
                                     $stops = $('.stopCount');
 
                                 $stops.empty().html(stops.length+' stops.');
