@@ -268,7 +268,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
                 
                 // optional..
                 if(kwArgs.stopIds != null){
-                    data.routes = kwArgs.stopIds.join(',');
+                    data.stops = kwArgs.stopIds.join(',');
                 }
                 
                 jqXHR = getData(url, data);
